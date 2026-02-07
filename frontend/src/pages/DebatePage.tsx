@@ -1,51 +1,79 @@
-import { useApp } from '@/app/providers/AppProvider';
-import { DebateLayout } from '@/layouts/DebateLayout';
-import { ExpandingInput } from '@/components/ExpandingInput';
-import { DebateResponseView } from '@/components/DebateResponse';
+import { useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "../services/auth/firebase";
+
+const PERSONAS = [
+  { id: "apj", name: "APJ Abdul Kalam" },
+  { id: "gandhi", name: "Mahatma Gandhi" },
+  { id: "chanakya", name: "Chanakya" },
+];
 
 export default function DebatePage() {
-  const { selectedPersona, currentResponse, isLoading, submitArgument } = useApp();
+  const [persona, setPersona] = useState("apj");
+  const [topic, setTopic] = useState("");
+
+  const logout = async () => {
+    await signOut(auth);
+  };
+
+  const handleSubmit = () => {
+    if (!topic.trim()) return;
+
+    console.log("Debate started:", {
+      persona,
+      topic,
+    });
+
+    // next step: send this to backend
+    setTopic("");
+  };
 
   return (
-    <DebateLayout>
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <header className="mb-10">
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">Counterpoint</h1>
-          {selectedPersona ? (
-            <p className="text-sm text-muted-foreground mt-1">
-              Debating as:{' '}
-              <span className="text-foreground font-medium">{selectedPersona.name}</span>
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground mt-1">
-              Select a persona from the sidebar to begin.
-            </p>
-          )}
-        </header>
+    <div className="min-h-screen flex flex-col">
+      {/* HEADER */}
+      <header className="h-14 border-b flex items-center justify-between px-6">
+        <h1 className="text-xl font-bold">Shastrarth</h1>
 
-        {selectedPersona && (
-          <div className="mb-8">
-            <ExpandingInput onSubmit={submitArgument} disabled={isLoading} />
-          </div>
-        )}
+        <button
+          onClick={logout}
+          className="text-sm text-red-500 underline"
+        >
+          Logout
+        </button>
+      </header>
 
-        {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
-            <span>Analyzing your argument...</span>
-          </div>
-        )}
+      {/* MAIN (empty chat area for now) */}
+      <main className="flex-1 flex items-center justify-center text-muted-foreground">
+        <p>Select a persona and enter a topic to begin the debate</p>
+      </main>
 
-        {currentResponse && !isLoading && <DebateResponseView response={currentResponse} />}
+      {/* INPUT BAR (ChatGPT style) */}
+      <footer className="border-t px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
 
-        {!selectedPersona && !currentResponse && (
-          <div className="py-16 text-center">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Choose a perspective. Present your argument. Receive structured analysis.
-            </p>
-          </div>
-        )}
-      </div>
-    </DebateLayout>
+          {/* PERSONA SELECTOR */}
+          <select
+            value={persona}
+            onChange={(e) => setPersona(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm bg-background"
+          >
+            {PERSONAS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          {/* TOPIC INPUT */}
+          <input
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            placeholder="Enter debate topic…"
+            className="flex-1 border rounded-md px-4 py-2"
+          />
+        </div>
+      </footer>
+    </div>
   );
 }

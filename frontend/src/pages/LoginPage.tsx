@@ -1,81 +1,80 @@
-import { useState } from 'react';
-import { useApp } from '@/app/providers/AppProvider';
-import { useNavigate } from 'react-router-dom';
+import {
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut,
+  User,
+} from "firebase/auth";
+import { auth, googleProvider } from "../services/auth/firebase";
+import { useEffect, useState } from "react";
 
-export default function LoginPage() {
-  const { login } = useApp();
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export default function Login() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [signingIn, setSigningIn] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  // 🔑 Listen to Firebase auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 🔐 Google login
+  const loginWithGoogle = async () => {
     try {
-      await login(email, password);
-      navigate('/debate');
-    } catch {
-      setError('Authentication failed.');
+      setSigningIn(true);
+      await signInWithPopup(auth, googleProvider);
+    } finally {
+      setSigningIn(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight">
-          Counterpoint
-        </h1>
-        <p className="text-sm text-muted-foreground mb-8">Sign in to continue</p>
+  // 🚪 Logout
+  const logout = async () => {
+    await signOut(auth);
+  };
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-xs font-medium text-muted-foreground mb-1.5"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-            />
-          </div>
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center">Loading…</div>;
+  }
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-xs font-medium text-muted-foreground mb-1.5"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 text-sm bg-card border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-            />
-          </div>
-
-          {error && <p className="text-xs text-destructive">{error}</p>}
+  if (user) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="border rounded-xl p-6 w-[360px]">
+          <h2 className="text-lg font-semibold">
+            Welcome, {user.displayName}
+          </h2>
+          <p className="text-sm text-gray-500">{user.email}</p>
 
           <button
-            type="submit"
-            className="w-full py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            onClick={logout}
+            className="mt-4 text-sm text-red-500 underline"
           >
-            Sign in
+            Logout
           </button>
-        </form>
+        </div>
+      </div>
+    );
+  }
 
-        <p className="mt-6 text-xs text-muted-foreground text-center">
-          Mock authentication. Any credentials will work.
-        </p>
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <div className="border rounded-xl p-6 w-[360px]">
+        <h1 className="text-xl font-semibold mb-4">
+          Sign in to Counterpoint
+        </h1>
+
+        <button
+          onClick={loginWithGoogle}
+          disabled={signingIn}
+          className="w-full border rounded-md py-2 flex items-center justify-center gap-2"
+        >
+          {signingIn ? "Signing in…" : "Continue with Google"}
+        </button>
       </div>
     </div>
   );
