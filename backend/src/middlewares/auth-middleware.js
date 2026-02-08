@@ -8,14 +8,14 @@ export async function authenticate(req,res,next){
     }
 
     const token = authHeader.split(" ")[1];
-
     try{
         const decoded = await admin.auth().verifyIdToken(token);
 
         req.user = {
-            id: decoded.uuid,
+            id: decoded.uid,
             email: decoded.email
         };
+
         next()
     }catch(err){
         console.log(err);

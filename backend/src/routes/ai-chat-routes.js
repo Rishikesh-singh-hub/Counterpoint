@@ -1,8 +1,11 @@
 import express from "express";
-import {debate} from "../controller/genai-controller.js";
+import {debateController} from "../controller/DebateController.js";
+import { messageController } from "../controller/MessageController.js";
+
 
 const router = express.Router();
 
-router.post("/chat",debate);
+router.post("/msg",messageController);
+router.post("/deb",debateController);
 
 export default router;

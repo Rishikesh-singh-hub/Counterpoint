@@ -1,11 +1,11 @@
 import genAi from "../config/genai.js";
 import { IDEOLOGY_PROMPTS } from "../controller/ideologies.js";
 
-const generateResponse = async ({
+const generateResponse = async (
   ideology,
   userPrompt,
   temperature = 0.7
-}) => {
+) => {
   try {
     if (!IDEOLOGY_PROMPTS[ideology]) {
       throw new Error("INVALID_IDEOLOGY");
@@ -20,6 +20,7 @@ const generateResponse = async ({
 
       generationConfig: { temperature }
     });
+
 
     const systemPrompt = IDEOLOGY_PROMPTS[ideology];
 
