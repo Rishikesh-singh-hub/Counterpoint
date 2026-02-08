@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '@/pages/LoginPage';
 import DebatePage from '@/pages/DebatePage';
 import NotFound from '@/pages/NotFound';
+import HomePage from '@/pages/HomePage';
 
 export function AppRouter() {
   return (

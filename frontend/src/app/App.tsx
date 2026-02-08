@@ -34,7 +34,7 @@ export default function App() {
       {/* Debate page ONLY if logged in */}
       <Route
         path="/debate"
-        element={user ? <DebatePage /> : <Navigate to="/" replace />}
+        element={user ? <DebatePage /> : <Navigate to="/login" replace />}
       />
     </Routes>
   );
