@@ -4,4 +4,5 @@ backend/.env
 backend/src/config/firebase-service-account.json
 /backend/node_modules
 
-Frontend/front.html
+
+Counterpoint
