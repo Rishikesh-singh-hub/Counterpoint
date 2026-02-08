@@ -11,6 +11,7 @@ const app = express();
 
 app.use(cors({
     origin: process.env.frontend_origin,
+    origin: process.env.local,
     credentials: true,
 }))
 
