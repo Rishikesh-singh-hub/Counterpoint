@@ -2,6 +2,7 @@ import { signInWithPopup, signOut, User } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../services/auth/firebase";
 import { useState } from "react";
+import { Link } from "react-router-dom"
 
 type Props = {
   user: User | null;
@@ -25,90 +26,107 @@ export default function HomePage({ user }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* HEADER */}
-      <header className="h-14 border-b flex items-center justify-between px-6">
-        <h1 className="text-xl font-bold">Shastrarth</h1>
-
-        {/* Right side */}
-        {!user ? (
-          <button
-            onClick={loginWithGoogle}
-            className="border rounded-md px-4 py-1.5 text-sm hover:bg-muted"
-          >
-            Login
-          </button>
-        ) : (
-          <div className="relative">
+    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+      {/* ================= HEADER ================= */}
+      <header className="h-14 border-b border-gray-200 flex items-center justify-between px-6">
+        {/* Left: Brand / Logo */}
+        <Link
+          to="/"
+          className="text-xl font-bold tracking-wide select-none hover:opacity-80 transition"
+        >
+          <h1 className="text-xl font-bold tracking-wide select-none">
+            Perspective
+          </h1>
+        </Link>
+        {/* Right: Auth / Profile */}
+        <div className="flex items-center gap-3">
+          {!user ? (
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => navigate("/login")}
+              className="text-sm px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+            >
+              Sign in
+            </button>
+          ) : (
+            <button
+              onClick={goToDebate}
               className="flex items-center gap-2"
+              title={user.email}
             >
               <img
-                src={user.photoURL || ""}
-                alt="profile"
-                className="h-8 w-8 rounded-full"
+                src={user.photoURL}
+                alt="Profile"
+                className="h-8 w-8 rounded-full border border-gray-300"
               />
             </button>
+          )}
+        </div>
 
-            {open && (
-              <div className="absolute right-0 mt-2 w-48 border rounded-md bg-background shadow-md p-2">
-                <p className="text-xs text-muted-foreground px-2 truncate">
-                  {user.email}
-                </p>
-
-                <button
-                  onClick={goToDebate}
-                  className="w-full text-left px-2 py-1.5 text-sm hover:bg-muted rounded"
-                >
-                  Start Debate
-                </button>
-
-                <button
-                  onClick={logout}
-                  className="w-full text-left px-2 py-1.5 text-sm text-red-500 hover:bg-muted rounded"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </header>
 
-      {/* MAIN CONTENT */}
+
+
+      {/* ================= MAIN ================= */}
       <main className="flex-1 flex items-center justify-center">
-  <div className="max-w-xl w-full text-center px-6">
-    <h2 className="text-4xl font-bold mb-2">Welcome to Shastrarth</h2>
-    <p className="text-muted-foreground mb-6">
-      Structured debate with logic, respect, and ideas.
-    </p>
+        <div className="max-w-2xl w-full text-center px-6">
+          {/* Hero */}
+          <h2 className="text-4xl font-bold mb-3">
+            Debate Ideas, Not People
+          </h2>
 
-    {/* 🔥 MAIN CTA: Start Debate */}
-    {user && (
-      <button
-        onClick={goToDebate}
-        className="w-full bg-black text-white rounded-md py-3 mb-8 hover:opacity-90"
-      >
-        Start Debate
-      </button>
-    )}
+          <p className="text-gray-500 mb-8">
+            Perspective enables structured, persona-driven debates
+            focused on logic, clarity, and respectful disagreement.
+          </p>
 
-    <div className="text-left border rounded-xl p-6">
-      <h3 className="text-lg font-semibold mb-4">
-        Shastrarth Rules
-      </h3>
-      <ul className="space-y-2 text-sm text-muted-foreground">
-        <li>• One topic per debate</li>
-        <li>• Persona-based arguments</li>
-        <li>• Stay on topic</li>
-        <li>• No personal attacks</li>
-        <li>• Logic over emotion</li>
-      </ul>
-    </div>
-  </div>
-</main>
+          {/* CTA */}
+          {user ? (
+            <button
+              onClick={goToDebate}
+              className="inline-flex items-center gap-2 px-6 py-2.5 border border-gray-300 rounded-full text-sm font-medium text-gray-800 hover:bg-gray-100 transition"
+            >
+              Start session →
+            </button>
 
+          ) : (
+            <p className="text-sm text-gray-500 mb-10">
+              Sign in to begin a debate.
+            </p>
+          )}
+
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+            <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition">
+              <h3 className="font-semibold mb-2">🎭 Personas</h3>
+              <p className="text-sm text-gray-500">
+                Debate through distinct intellectual perspectives
+                instead of generic AI responses.
+              </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition">
+              <h3 className="font-semibold mb-2">🧠 Structured</h3>
+              <p className="text-sm text-gray-500">
+                One topic, focused arguments, and logical progression
+                without distractions.
+              </p>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-5 hover:shadow-sm transition">
+              <h3 className="font-semibold mb-2">⚖️ Respectful</h3>
+              <p className="text-sm text-gray-500">
+                No personal attacks. Ideas stand or fall on merit alone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* ================= FOOTER ================= */}
+      <footer className="h-12 border-t border-gray-200 flex items-center justify-center text-xs text-gray-400">
+        Built for thinkers • Perspective
+      </footer>
     </div>
   );
+
 }
