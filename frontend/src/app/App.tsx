@@ -5,6 +5,8 @@ import { auth } from "../services/auth/firebase";
 
 import HomePage from "../pages/HomePage";
 import DebatePage from "../pages/DebatePage";
+import LoginPage from "../pages/LoginPage";
+import NotFound from "../pages/NotFound"
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -28,14 +30,20 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Home page ALWAYS loads at / */}
+      {/* Home */}
       <Route path="/" element={<HomePage user={user} />} />
 
-      {/* Debate page ONLY if logged in */}
+      {/* Login */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Debate (protected) */}
       <Route
         path="/debate"
         element={user ? <DebatePage /> : <Navigate to="/login" replace />}
       />
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

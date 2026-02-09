@@ -2,19 +2,17 @@ import { useState } from "react";
 import { signOut, User } from "firebase/auth";
 import { auth } from "../services/auth/firebase";
 import { authFetch } from "../services/ai/authFetch"
+import { useNavigate } from "react-router-dom";
 
 
 
-const PERSONAS = [
-  { id: "apj", name: "APJ Abdul Kalam" },
-  { id: "gandhi", name: "Mahatma Gandhi" },
-  { id: "chanakya", name: "Chanakya" },
-];
 
-export default function DebatePage() {
+type Props = {
+  user: User | null;
+};
+
+export default function DebatePage({ user }: Props) {
   const [persona, setPersona] = useState("apj");
-  const [topic, setTopic] = useState("");
-  const [debateStarted, setDebateStarted] = useState(false);
   const [message, setMessage] = useState("");
 
   const logout = async () => {
@@ -22,40 +20,15 @@ export default function DebatePage() {
   };
 
   const [debateId, setDebateId] = useState<string | null>(null);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState<
     { role: "user" | "assistant"; content: string }[]>([]);
 
 
-  // STEP 1: start debate (topic + persona)
-  const handleStartDebate = async () => {
-    const user = auth.currentUser;
-    if (!topic.trim()) return;
-    if (!user) return; // safety
-
-    try {
-      const debateId = await authFetch(user, "/bot/deb", {
-        method: "POST",
-        body: JSON.stringify({
-          persona,
-          topic,
-        }),
-      });
-
-      setDebateId(debateId);
-      setDebateStarted(true);
-      // optionally: setDebateId(response.debateId);
-    } catch (err) {
-      console.error("Failed to start debate", err);
-    }
-  };
-
-
-  // STEP 2: send chat messages
+  //  send chat messages
   const sendChatMessage = async () => {
+    console.info("msg sent");
     if (!message.trim()) return;
-    if (!debateId) return;
-
     const user = auth.currentUser;
     if (!user) return;
 
@@ -65,12 +38,11 @@ export default function DebatePage() {
       const data = await authFetch(user, "/bot/msg", {
         method: "POST",
         body: JSON.stringify({
-          debateId,
           message: userMessage,
-          role: "user",
+          persona: "apj",
         }),
       });
-      console.log(data)
+      console.info(data)
 
       // expected backend response: { reply: "AI response text" }
 
@@ -85,100 +57,127 @@ export default function DebatePage() {
       console.error("Failed to send message", err);
     }
   };
-
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* HEADER */}
-      <header className="h-14 border-b flex items-center justify-between px-6">
-        <h1 className="text-xl font-bold">Shastrarth</h1>
+    <div className="h-screen flex bg-white relative overflow-hidden">
+      {/* ===== Overlay (click to close) ===== */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <button
-          onClick={logout}
-          className="text-sm text-red-500 underline"
-        >
-          Logout
-        </button>
-      </header>
+      {/* ===== Sliding Sidebar ===== */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-50
+    transform transition-transform duration-300 ease-in-out
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="h-14 flex items-center justify-between px-4 border-b">
+          <span className="text-sm font-semibold">Sessions</span>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="text-gray-500 hover:text-black"
+          >
+            ✕
+          </button>
+        </div>
 
-      {/* MAIN */}
-      <main className="flex-1 flex items-center justify-center">
-        {!debateStarted ? (
-          /* ===== PHASE 1: SETUP ===== */
-          <div className="w-full max-w-xl space-y-4 px-4">
-            <h2 className="text-xl font-semibold text-center">
-              Start a Debate
-            </h2>
+        <div className="p-4 text-sm text-gray-400">
+          Sessions history coming soon
+        </div>
+      </aside>
 
-            {/* PERSONA SELECT */}
-            <select
-              value={persona}
-              onChange={(e) => setPersona(e.target.value)}
-              className="w-full border rounded-md px-3 py-2"
-            >
-              {PERSONAS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-
-            {/* TOPIC INPUT */}
-            <input
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Enter debate topic…"
-              className="w-full border rounded-md px-4 py-2"
-            />
-
-            {/* START BUTTON */}
+      {/* ===== Main Area ===== */}
+      <div className="flex-1 flex flex-col">
+        {/* HEADER */}
+        <header className="h-14 border-b border-gray-200 flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            {/* Sidebar toggle */}
             <button
-              onClick={handleStartDebate}
-              className="w-full bg-black text-white py-2 rounded-md"
+              onClick={() => setSidebarOpen(true)}
+              className="text-xl leading-none"
             >
-              Start Debate
+              ☰
             </button>
-          </div>
-        ) : (
-          /* ===== PHASE 2: CHAT AREA ===== */
-          <div className="w-full max-w-4xl mx-auto px-4 space-y-3">
-            {chatMessages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`p-3 rounded-md w-fit max-w-[80%] ${msg.role === "user"
-                  ? "ml-auto bg-black text-white"
-                  : "mr-auto bg-gray-100 text-black"
-                  }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
 
-      {/* CHAT INPUT (ONLY AFTER DEBATE STARTS) */}
-      {debateStarted && (
-        <footer className="border-t px-4 py-3">
-          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            {/* Logo */}
+            <h1
+              onClick={() => navigate("/")}
+              className="text-lg font-bold tracking-wide cursor-pointer"
+            >
+              Perspective
+            </h1>
+          </div>
+
+          {/* Auth */}
+          {!user ? (
+            <button
+              onClick={() => navigate("/login")}
+              className="text-sm px-4 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+            >
+              Sign in
+            </button>
+          ) : (
+            <img
+              src={user.photoURL}
+              alt="Profile"
+              className="h-8 w-8 rounded-full border"
+            />
+          )}
+        </header>
+
+        {/* CHAT AREA */}
+        <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+          {chatMessages.length === 0 && (
+            <p className="text-sm text-gray-400 text-center mt-10">
+              Start the session by sharing your perspective.
+            </p>
+          )}
+
+          {chatMessages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`max-w-[70%] px-4 py-2 rounded-md text-sm ${msg.role === "user"
+                  ? "ml-auto bg-black text-white"
+                  : "mr-auto bg-gray-100 text-gray-900"
+                }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+        </main>
+
+        {/* INPUT BAR */}
+        <footer className="border-t border-gray-200 px-6 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/persona")}
+              className="text-sm px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+            >
+              Persona
+            </button>
+
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && sendChatMessage()
-              }
+              onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
               placeholder="Enter your argument…"
-              className="flex-1 border rounded-md px-4 py-2"
+              className="flex-1 border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
+
             <button
               onClick={sendChatMessage}
-              className="bg-black text-white px-4 py-2 rounded-md"
+              className="bg-black text-white px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition"
             >
               Send
             </button>
           </div>
         </footer>
-      )}
+      </div>
     </div>
   );
+
 };
