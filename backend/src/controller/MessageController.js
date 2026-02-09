@@ -2,14 +2,14 @@ import { saveMessage } from "../services/chatService.js";
 
 export const messageController =async (req,res) => {
     try {
-        const { debateId, message, role } = req.body;
-        if (!debateId || !message || !role) {
+        const { message, persona } = req.body;
+        if ( !message || !persona) {
             console.log("error caught \n",err);
             return res.status(500).json({
                 error: "Internal Server Error",
             });
         }
-        const debRes =await saveMessage(debateId.Id,message,role);
+        const debRes =await saveMessage(message,persona);
         return res.status(200).json({content:debRes});
     }catch(err){
         console.log(err);
