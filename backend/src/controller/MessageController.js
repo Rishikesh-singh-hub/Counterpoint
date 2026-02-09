@@ -4,7 +4,6 @@ export const messageController =async (req,res) => {
     try {
         const { debateId, message, role } = req.body;
         if (!debateId || !message || !role) {
-            console.log("error caught \n",err);
             return res.status(500).json({
                 error: "Internal Server Error",
             });
