@@ -7,6 +7,7 @@ import HomePage from "../pages/HomePage";
 import DebatePage from "../pages/DebatePage";
 import LoginPage from "../pages/LoginPage";
 import NotFound from "../pages/NotFound"
+import PersonaPage from "../pages/Personas"
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -33,13 +34,18 @@ export default function App() {
       {/* Home */}
       <Route path="/" element={<HomePage user={user} />} />
 
+      {/* Persona */}
+      <Route path="/persona" element={
+        user ? <PersonaPage /> : <Navigate to="/login" replace />
+        } />
+
       {/* Login */}
       <Route path="/login" element={<LoginPage />} />
 
       {/* Debate (protected) */}
       <Route
         path="/debate"
-        element={user ? <DebatePage /> : <Navigate to="/login" replace />}
+        element={user ? <DebatePage user={user}/> : <Navigate to="/login" replace />}
       />
 
       {/* 404 */}
