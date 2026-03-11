@@ -2,18 +2,12 @@ import genAi from "../config/genai.js";
 import { IDEOLOGY_PROMPTS } from "../controller/ideologies.js";
 
 const generateResponse = async (
-  ideology,
+  systemPrompt,
   userPrompt,
   temperature = 0.7
 ) => {
   try {
-    if (!IDEOLOGY_PROMPTS[ideology]) {
-      throw new Error("INVALID_IDEOLOGY");
-    }
 
-    if (typeof userPrompt !== "string") {
-      throw new Error("INVALID_USER_PROMPT");
-    }
 
     const model = genAi.getGenerativeModel({
       model: "models/gemini-2.5-flash",
@@ -21,13 +15,10 @@ const generateResponse = async (
       generationConfig: { temperature }
     });
 
-
-    const systemPrompt = IDEOLOGY_PROMPTS[ideology];
-
     const prompt = `${systemPrompt}\n\nUser query:\n${userPrompt}`;
 
     const aiRes = await model.generateContent(prompt);
-
+   
     const txtRes = aiRes.response.text();
 
     if (!txtRes) {

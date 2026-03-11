@@ -4,7 +4,9 @@ import {errorHandler} from "./middlewares/error.middleware.js";
 import authRoutes from "./routes/testing.routes.js"
 import chatRouter from "./routes/ai-chat-routes.js"
 import {authenticate} from "./middlewares/auth-middleware.js"
+import connectDb from "../src/config/db.js";
 import cors from "cors"
+import persona from "./routes/persona-routes.js"
 
 
 const app = express();
@@ -23,9 +25,13 @@ app.use(
 
 app.use(express.json());
 
+connectDb();
+
 app.use("/auth",authRoutes);
 
 app.use("/bot",authenticate,chatRouter);
+
+app.use("/persona",authenticate,persona);
 
 app.use("/users",userRoutes);
 

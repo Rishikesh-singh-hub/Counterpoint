@@ -1,24 +1,24 @@
-import { messages, debates } from "./memoryStore.js";
-import {getDebate,getMessage} from "../models/get.models.js"
 import generateResponse from "./genai-message-service.js"
+import {getPersonaById} from "../services/personaService.js"
+import getIdeology from "./Ideology.js"
 
+export const saveMessage = async (content, personaId) => {
 
-// export const startDebate = (userId, persona, topic) => {
+  try{
 
-//   const debate = getDebate(userId,topic,persona);
- 
-//   debates.set(debate.id, debate);
-//   messages.set(debate.id, []);
+    const persona = await getPersonaById(personaId);
+    
+    const {id,name,description} = persona;
+    console.info(`[chatService.js] name: ${name} \n desc: ${description}`)
+    const Ideology = getIdeology(name,description)
+    console.log(`[chatService.js] \n ideology: ${Ideology}`)
 
+    const aiRes =await generateResponse(Ideology,content);  
+    return aiRes;
+  }catch(err){
+    console.error(err);
+  }
 
-//   return debate.id
-// }
-
-export const saveMessage = async (content, persona) => {
-
-  const aiRes =await generateResponse(persona,content);  
-
-  return aiRes;
 
 }
 
