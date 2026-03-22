@@ -13,6 +13,7 @@ export default function DebatePage({ user }: Props) {
   const [personaName, setPersonaName] = useState<string>("Persona");
   const [message, setMessage] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const [chatMessages, setChatMessages] = useState<
     { role: "user" | "assistant"; content: string }[]
@@ -35,33 +36,47 @@ export default function DebatePage({ user }: Props) {
   };
 
   const sendChatMessage = async () => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    const user = auth.currentUser;
-    if (!user) return;
+  const user = auth.currentUser;
+  if (!user) return;
 
-    const userMessage = message;
-    console.log(["DebatePage.tsx"],persona)
-    try {
-      const data = await authFetch(user, "/bot/msg", {
-        method: "POST",
-        body: JSON.stringify({
-          message: userMessage,
-          persona: persona,
-        }),
-      });
+  const userMessage = message;
 
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "user", content: userMessage },
-        { role: "assistant", content: data.content },
-      ]);
+  try {
 
-      setMessage("");
-    } catch (err) {
-      console.error("Failed to send message", err);
+    const body: any = {
+      message: userMessage,
+      persona: persona,
+    };
+
+    // only include sessionId if it exists
+    if (sessionId) {
+      body.sessionId = sessionId;
     }
-  };
+
+    const data = await authFetch(user, "/bot/msg", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    // save sessionId if backend created one
+    if (!sessionId && data.sessionId) {
+      setSessionId(data.sessionId);
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      { role: "user", content: userMessage },
+      { role: "assistant", content: data.content },
+    ]);
+
+    setMessage("");
+
+  } catch (err) {
+    console.error("Failed to send message", err);
+  }
+};
 
   return (
     <div className="h-screen flex bg-white relative overflow-hidden">

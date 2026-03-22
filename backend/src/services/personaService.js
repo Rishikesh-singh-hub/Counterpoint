@@ -2,7 +2,6 @@ import Persona from "../schema/personaSchema.js";
 
 export const getAllPersona = async () => {
 
-    console.info("[persona.js]","getting info from db.....");
     const persona = await Persona.find();
     if (!persona) {
         return null

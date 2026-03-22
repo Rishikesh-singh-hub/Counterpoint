@@ -1,0 +1,24 @@
+import Session from "../schema/sessionSchema.js"
+import logger from "../utils/logger.js"
+
+export const addSession = async (userId, persona, content, aiRes) =>{
+    logger.info(`req recieved from id: ${userId}`)
+     const session = new Session({
+    userId: userId,
+    persona: persona,
+    messages: [
+      {
+        role: "user",
+        content: content
+      },
+      {
+        role: "assistant",
+        content: aiRes
+      }
+    ]
+  });
+
+  const savedSession =  await session.save();
+  return savedSession;
+
+}
